@@ -6,9 +6,4 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Folder Include="business\" />
-    <Folder Include="data\" />
-  </ItemGroup>
-
 </Project>
