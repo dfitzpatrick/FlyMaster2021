@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
-
+using CsvHelper;
+using CsvHelper.Configuration.Attributes;
+using System.Dynamic;
+using System.Globalization;
 
 namespace FlyMaster2021.business
 {
@@ -18,10 +21,15 @@ namespace FlyMaster2021.business
         {
 
         }
-        private List<FlyWing> objects = new List<FlyWing>();
+        private List<FlyWing> _objects = new List<FlyWing>();
+        public List<FlyWing> Objects {
+            get { 
+                return this._objects; 
+            } 
+        }
         public FlyImporter(List<FlyWing> objects)
         {
-            this.objects = objects;
+            this._objects = objects;
         }
         public static FlyImporter importFromDirectory(string flyDirectory)
         {
@@ -31,25 +39,30 @@ namespace FlyMaster2021.business
             foreach (FileInfo f in files)
             {
                 using (StreamReader sr = new StreamReader(f.FullName))
+                //using (var csv = new CsvReader(sr, System.Globalization.CultureInfo.InvariantCulture))
                 {
-                    string values = sr.ReadToEnd();
-                    string[] data = values.Split(",");
-                    List<Tuple<int, int>> points = getCoordinates(data);
+                    // skip the header row
+                    sr.ReadLine();
+
+                    // only one record of data per file (for now)
+                    var data = sr.ReadLine().Split(',');
+                    
+                   List<Tuple<double, double>> points = FlyImporter.getCoordinates(data);
                     container.Add(new FlyWing(points));
                 }
 
             }
             return new FlyImporter(container);
         }
-        private static List<Tuple<int, int>> getCoordinates(string[] csv)
+        private static List<Tuple<double, double>> getCoordinates(string[] csv)
         {
-            List<Tuple<int, int>> container = new List<Tuple<int, int>>();
+            List<Tuple<double, double>> container = new List<Tuple<double, double>>();
             for (int i = 0; i < csv.Length; i += 2)
             {
                 try
                 {
-                    int v1 = Int32.Parse(csv[i]);
-                    int v2 = Int32.Parse(csv[i + 1]);
+                    double v1 = Double.Parse(csv[i], CultureInfo.InvariantCulture);
+                    double v2 = Double.Parse(csv[i + 1], CultureInfo.InvariantCulture);
                     container.Add(Tuple.Create(v1, v2));
 
                 }
